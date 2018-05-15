@@ -43,6 +43,6 @@ stack.o: stack.c stack.h matrix.h
 
 clean:
 	rm y.tab.c y.tab.h
-	rm lex.yy.c
+	rm lex.yy.c mdl
 	rm -rf mdl.dSYM
 	rm *.o *.png

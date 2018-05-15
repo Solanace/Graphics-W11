@@ -51,57 +51,94 @@
 
 void my_main() {
 
-  int i;
-  struct matrix *tmp;
-  struct stack *systems;
-  screen t;
-  zbuffer zb;
-  color g;
-  double step_3d = 20;
-  double theta;
+	int i;
+	struct matrix *tmp;
+	struct stack *systems;
+	screen t;
+	zbuffer zb;
+	color g;
+	double step_3d = 20;
+	double theta;
 
-  //Lighting values here for easy access
-  color ambient;
-  double light[2][3];
-  double view[3];
-  double areflect[3];
-  double dreflect[3];
-  double sreflect[3];
+	//Lighting values here for easy access
+	color ambient;
+	double light[2][3];
+	double view[3];
+	double areflect[3];
+	double dreflect[3];
+	double sreflect[3];
 
-  ambient.red = 50;
-  ambient.green = 50;
-  ambient.blue = 50;
+	ambient.red = 50;
+	ambient.green = 50;
+	ambient.blue = 50;
 
-  light[LOCATION][0] = 0.5;
-  light[LOCATION][1] = 0.75;
-  light[LOCATION][2] = 1;
+	light[LOCATION][0] = 0.5;
+	light[LOCATION][1] = 0.75;
+	light[LOCATION][2] = 1;
 
-  light[COLOR][RED] = 0;
-  light[COLOR][GREEN] = 255;
-  light[COLOR][BLUE] = 255;
+	light[COLOR][RED] = 0;
+	light[COLOR][GREEN] = 255;
+	light[COLOR][BLUE] = 255;
 
-  view[0] = 0;
-  view[1] = 0;
-  view[2] = 1;
+	view[0] = 0;
+	view[1] = 0;
+	view[2] = 1;
 
-  areflect[RED] = 0.1;
-  areflect[GREEN] = 0.1;
-  areflect[BLUE] = 0.1;
+	areflect[RED] = 0.1;
+	areflect[GREEN] = 0.1;
+	areflect[BLUE] = 0.1;
 
-  dreflect[RED] = 0.5;
-  dreflect[GREEN] = 0.5;
-  dreflect[BLUE] = 0.5;
+	dreflect[RED] = 0.5;
+	dreflect[GREEN] = 0.5;
+	dreflect[BLUE] = 0.5;
 
-  sreflect[RED] = 0.5;
-  sreflect[GREEN] = 0.5;
-  sreflect[BLUE] = 0.5;
+	sreflect[RED] = 0.5;
+	sreflect[GREEN] = 0.5;
+	sreflect[BLUE] = 0.5;
 
-  systems = new_stack();
-  tmp = new_matrix(4, 1000);
-  clear_screen( t );
-  clear_zbuffer(zb);
-  g.red = 0;
-  g.green = 0;
-  g.blue = 0;
+	systems = new_stack();
+	tmp = new_matrix(4, 1000);
+	clear_screen( t );
+	clear_zbuffer(zb);
+	g.red = 0;
+	g.green = 0;
+	g.blue = 0;
 
+	for (i = 0; i < lastop; i ++) {
+		if (op[lastop].opcode == SPHERE) {
+			double x, y, z, r;
+			x = op[i].op.sphere.d[0];
+			y = op[i].op.sphere.d[1];
+			z = op[i].op.sphere.d[2];
+			r = op[i].op.sphere.r;
+			add_sphere(tmp, x, y, z, r, step_3d);
+			matrix_mult(peek(systems), tmp);
+			draw_polygons(tmp, t, zb, view, light, ambient, areflect, dreflect, sreflect);
+			tmp->lastcol = 0;
+		}
+
+		else if (op[lastop].opcode == TORUS) {
+			double x, y, z, r0, r1;
+			x = op[i].op.torus.d[0];
+			y = op[i].op.torus.d[1];
+			z = op[i].op.torus.d[2];
+			r0 = op[i].op.torus.r0;
+			r1 = op[i].op.torus.r1;
+			add_torus(tmp, x, y, z, r0, r1, step_3d);
+			matrix_mult(peek(systems), tmp);
+			draw_polygons(tmp, t, zb, view, light, ambient, areflect, dreflect, sreflect);
+			tmp->lastcol = 0;
+		}
+
+		else if (op[lastop].opcode == BOX) {
+			double x0, y0, z0, x1, y1, z1;
+			x0 = op[i].op.box.d0[0];
+			y0 = op[i].op.box.d0[1];
+			z0 = op[i].op.box.d0[2];
+			x1 = op[i].op.box.d1[0];
+			y1 = op[i].op.box.d1[1];
+			y1 = op[i].op.box.d1[2];
+			add_box(tmp, x0, y0, z0, x1, y1, z1);
+		}
+	}
 }
