@@ -105,7 +105,7 @@ void my_main() {
 	g.blue = 0;
 
 	for (i = 0; i < lastop; i ++) {
-		if (op[lastop].opcode == SPHERE) {
+		if (op[i].opcode == SPHERE) {
 			double x, y, z, r;
 			x = op[i].op.sphere.d[0];
 			y = op[i].op.sphere.d[1];
@@ -117,7 +117,7 @@ void my_main() {
 			tmp->lastcol = 0;
 		}
 
-		else if (op[lastop].opcode == TORUS) {
+		else if (op[i].opcode == TORUS) {
 			double x, y, z, r0, r1;
 			x = op[i].op.torus.d[0];
 			y = op[i].op.torus.d[1];
@@ -130,15 +130,81 @@ void my_main() {
 			tmp->lastcol = 0;
 		}
 
-		else if (op[lastop].opcode == BOX) {
+		else if (op[i].opcode == BOX) {
 			double x0, y0, z0, x1, y1, z1;
 			x0 = op[i].op.box.d0[0];
 			y0 = op[i].op.box.d0[1];
 			z0 = op[i].op.box.d0[2];
 			x1 = op[i].op.box.d1[0];
 			y1 = op[i].op.box.d1[1];
-			y1 = op[i].op.box.d1[2];
+			z1 = op[i].op.box.d1[2];
 			add_box(tmp, x0, y0, z0, x1, y1, z1);
+			matrix_mult(peek(systems), tmp);
+			draw_polygons(tmp, t, zb, view, light, ambient, areflect, dreflect, sreflect);
+			tmp->lastcol = 0;
+		}
+
+		else if (op[i].opcode == LINE) {
+			double x0, y0, z0, x1, y1, z1;
+			x0 = op[i].op.line.p0[0];
+			y0 = op[i].op.line.p0[1];
+			z0 = op[i].op.line.p0[2];
+			x1 = op[i].op.line.p1[0];
+			y1 = op[i].op.line.p1[1];
+			y1 = op[i].op.line.p1[2];
+			add_edge(tmp, x0, y0, z0, x1, y1, z1);
+			matrix_mult(peek(systems), tmp);
+			draw_lines(tmp, t, zb, g);
+			tmp->lastcol = 0;			
+		}
+		
+		else if (op[i].opcode == MOVE) {
+			double x, y, z;
+			x = op[i].op.move.d[0];
+			y = op[i].op.move.d[1];
+			z = op[i].op.move.d[2];
+			tmp = make_translate(x, y, z);
+			matrix_mult(peek(systems), tmp);
+			copy_matrix(tmp, peek(systems));
+			tmp->lastcol = 0;
+		}
+		
+		else if (op[i].opcode == SCALE) {
+			double x, y, z;
+			x = op[i].op.scale.d[0];
+			y = op[i].op.scale.d[1];
+			z = op[i].op.scale.d[2];
+			tmp = make_scale(x, y, z);
+			matrix_mult(peek(systems), tmp);
+			copy_matrix(tmp, peek(systems));
+			tmp->lastcol = 0;
+		}
+		
+		else if (op[i].opcode == ROTATE) {
+			theta = op[i].op.rotate.degrees * M_PI / 180;
+			int axis = op[i].op.rotate.axis;
+			if (axis == 0) tmp = make_rotX(theta);
+			else if (axis == 1) tmp = make_rotY(theta);
+			else tmp = make_rotZ(theta);
+			matrix_mult(peek(systems), tmp);
+			copy_matrix(tmp, peek(systems));
+			tmp->lastcol = 0;
+		}
+		
+		else if (op[i].opcode == PUSH) {
+			push(systems);
+		}
+		
+		else if (op[i].opcode == POP) {
+			pop(systems);
+		}
+		
+		else if (op[i].opcode == DISPLAY) {
+			display(t);
+		}
+		
+		else if (op[i].opcode == SAVE) {
+			save_extension(t, op[i].op.save.p->name);
 		}
 	}
 }
