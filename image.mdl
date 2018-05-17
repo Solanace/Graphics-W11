@@ -1,5 +1,3 @@
-// APiece of the Puzzle
-
 push
 move 250 250 0
 
@@ -29,6 +27,10 @@ pop
 // Inclined plane
 push
 move -350 -250 -50
-rotate z 20.8
+rotate z 20.9
 box 0 0 0 900 400 100
+pop
+
+pop
 display
+save image.png
